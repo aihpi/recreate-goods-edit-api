@@ -1,0 +1,16 @@
+services:
+  qwen-image-edit-api:
+    build: .
+    container_name: qwen-image-edit-api
+    ports:
+      - "8000:8000"
+    environment:
+      - CUDA_VISIBLE_DEVICES=0
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    restart: unless-stopped

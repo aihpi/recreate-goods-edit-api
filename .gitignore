@@ -21,6 +21,7 @@ ENV/
 
 # Models cache
 models/
+model-cache/
 *.bin
 *.safetensors
 

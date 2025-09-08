@@ -36,9 +36,7 @@ The API will be available at `http://localhost:8000`
 
 **Note**: On first run, the model (~15GB) will be downloaded from Hugging Face.
 
-### Docker Setup (Recommended)
-
-The Docker image includes the model pre-downloaded for instant startup:
+### Docker Setup
 
 1. Build and run with Docker Compose:
 
@@ -46,7 +44,28 @@ The Docker image includes the model pre-downloaded for instant startup:
 docker-compose up -d
 ```
 
-**Note**: The Docker build will take time initially (~20-30 minutes) as it downloads the model during build. The final image will be ~20GB but starts instantly without needing to download the model.
+The API will be accessible at `http://localhost:200`
+
+**Note**: On first run, the model (~15GB) will be downloaded to `./model-cache/` directory. Subsequent restarts will use the cached model.
+
+### Kubernetes Deployment
+
+1. Build and push the image:
+
+```bash
+docker build -t your-registry/qwen-image-edit-api:latest .
+docker push your-registry/qwen-image-edit-api:latest
+```
+
+2. Deploy to Kubernetes:
+
+```bash
+kubectl apply -f k8s-deployment.yaml
+```
+
+The service will be accessible on port 200 via LoadBalancer IP.
+
+**Note**: The init container will download the model to a persistent volume on first deployment. The model is shared across pod restarts.
 
 ## API Endpoints
 
@@ -78,13 +97,14 @@ Returns server status and model loading state.
 
 1. Start the API server
 2. In OpenWebUI settings, add custom OpenAI API endpoint:
-   - URL: `http://localhost:8000/v1`
+   - URL: `http://localhost:200/v1` (Docker) or `http://localhost:8000/v1` (Local)
    - Model: `qwen-image-edit`
 
 ## Usage with curl
 
 ```bash
-curl -X POST "http://localhost:8000/v1/images/edits" \
+# Docker/Kubernetes (port 200)
+curl -X POST "http://localhost:200/v1/images/edits" \
   -H "Content-Type: multipart/form-data" \
   -F "image=@input.jpg" \
   -F "prompt=Make the sky purple" \

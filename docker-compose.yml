@@ -3,9 +3,11 @@ services:
     build: .
     container_name: qwen-image-edit-api
     ports:
-      - "8000:8000"
+      - "200:8000"  # Map external port 200 to internal 8000
     environment:
       - CUDA_VISIBLE_DEVICES=0
+    volumes:
+      - ./model-cache:/app/model  # Persist model between restarts
     deploy:
       resources:
         reservations:

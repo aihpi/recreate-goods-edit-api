@@ -23,33 +23,35 @@ spec:
       labels:
         app: qwen-image-edit-api
     spec:
+      nodeSelector:
+        gpu: h100
       initContainers:
-      - name: model-downloader
-        image: your-registry/qwen-image-edit-api:latest
-        command: ['python3', 'download_model.py']
-        volumeMounts:
-        - name: model-storage
-          mountPath: /app/model
+        - name: model-downloader
+          image: ghcr.io/aihpi/recreate-goods-edit-api:latest
+          command: ["python3", "download_model.py"]
+          volumeMounts:
+            - name: model-storage
+              mountPath: /app/model
       containers:
-      - name: api
-        image: your-registry/qwen-image-edit-api:latest
-        ports:
-        - containerPort: 8000
-        volumeMounts:
-        - name: model-storage
-          mountPath: /app/model
-        resources:
-          limits:
-            nvidia.com/gpu: 1
-            memory: "32Gi"  # Generous limit to avoid OOM
-            cpu: "8"
-          requests:
-            memory: "24Gi"  # Request 24GB minimum
-            cpu: "4"
+        - name: api
+          image: ghcr.io/aihpi/recreate-goods-edit-api:latest
+          ports:
+            - containerPort: 8000
+          volumeMounts:
+            - name: model-storage
+              mountPath: /app/model
+          resources:
+            limits:
+              nvidia.com/gpu: 1
+              memory: "32Gi" # Generous limit to avoid OOM
+              cpu: "8"
+            requests:
+              memory: "24Gi" # Request 24GB minimum
+              cpu: "4"
       volumes:
-      - name: model-storage
-        persistentVolumeClaim:
-          claimName: model-storage
+        - name: model-storage
+          persistentVolumeClaim:
+            claimName: model-storage
 ---
 apiVersion: v1
 kind: Service
@@ -59,7 +61,7 @@ spec:
   selector:
     app: qwen-image-edit-api
   ports:
-  - port: 200  # External port
-    targetPort: 8000  # Internal container port
-    name: http
-  type: LoadBalancer  # Changed to LoadBalancer for external access
+    - port: 200 # External port
+      targetPort: 8000 # Internal container port
+      name: http
+  type: ClusterIP

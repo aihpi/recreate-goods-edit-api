@@ -50,20 +50,38 @@ The API will be accessible at `http://localhost:200`
 
 ### Kubernetes Deployment
 
-1. Build and push the image:
+#### Option 1: Use Pre-built Image from GitHub
 
-```bash
-docker build -t your-registry/qwen-image-edit-api:latest .
-docker push your-registry/qwen-image-edit-api:latest
-```
+The image is automatically built and published to GitHub Container Registry when code is pushed.
 
-2. Deploy to Kubernetes:
+1. Deploy directly to Kubernetes:
 
 ```bash
 kubectl apply -f k8s-deployment.yaml
 ```
 
-The service will be accessible on port 200 via LoadBalancer IP.
+#### Option 2: Build and Push Manually
+
+1. Login to GitHub Container Registry:
+
+```bash
+echo $GITHUB_TOKEN | docker login ghcr.io -u YOUR_GITHUB_USERNAME --password-stdin
+```
+
+2. Build and push the image:
+
+```bash
+docker build -t ghcr.io/aihpi/recreate-goods-edit-api:latest .
+docker push ghcr.io/aihpi/recreate-goods-edit-api:latest
+```
+
+3. Deploy to Kubernetes:
+
+```bash
+kubectl apply -f k8s-deployment.yaml
+```
+
+The service will be accessible on port 200 within the cluster (ClusterIP). Use kubectl port-forward or an Ingress for external access.
 
 **Note**: The init container will download the model to a persistent volume on first deployment. The model is shared across pod restarts.
 

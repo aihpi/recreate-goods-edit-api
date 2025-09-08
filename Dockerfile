@@ -3,7 +3,8 @@ FROM nvidia/cuda:12.1.0-runtime-ubuntu22.04
 # Set environment variables
 ENV PYTHONUNBUFFERED=1 \
     DEBIAN_FRONTEND=noninteractive \
-    CUDA_VISIBLE_DEVICES=0
+    CUDA_VISIBLE_DEVICES=0 \
+    PYTHONPATH=/app
 
 # Install Python and dependencies
 RUN apt-get update && apt-get install -y \
@@ -26,7 +27,7 @@ RUN pip3 install --no-cache-dir git+https://github.com/huggingface/diffusers
 
 # Copy application code and scripts
 COPY app app/
-COPY download_model.py .
+COPY download_model.py /app/
 
 # Create directory for model (will be mounted as volume or downloaded to)
 RUN mkdir -p /app/model
@@ -34,5 +35,8 @@ RUN mkdir -p /app/model
 # Expose port
 EXPOSE 8000
 
-# Run the application
+# Change to parent directory so imports work correctly
+WORKDIR /
+
+# Run the application from root directory
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

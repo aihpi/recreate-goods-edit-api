@@ -35,8 +35,5 @@ RUN mkdir -p /app/model
 # Expose port
 EXPOSE 8000
 
-# Change to parent directory so imports work correctly
-WORKDIR /
-
 # Run the application from root directory
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["python3", "-m", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

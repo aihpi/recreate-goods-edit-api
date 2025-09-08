@@ -28,7 +28,7 @@ spec:
       initContainers:
         - name: model-downloader
           image: ghcr.io/aihpi/recreate-goods-edit-api:latest
-          command: ["python3", "/app/download_model.py"]
+          command: ["python3", "download_model.py"]
           volumeMounts:
             - name: model-storage
               mountPath: /app/model

@@ -35,7 +35,29 @@ class ModelService:
             
             # Disable progress bar for cleaner logs
             self.pipeline.set_progress_bar_config(disable=True)
+
+            # Load LoRA if configured
+            lora_path = os.environ.get("LORA_PATH")
+            lora_weight_name = os.environ.get("LORA_WEIGHT_NAME")
+            hf_token = os.environ.get("HF_TOKEN")
+            max_lora_rank = int(os.environ.get("LORA_RANK", "16"))
+
+            if lora_path:
+                logger.info(f"Loading LoRA from: {lora_path}")
+                self.pipeline.enable_lora_hotswap(target_rank=max_lora_rank)
+                self.pipeline.load_lora_weights(
+                    lora_path,
+                    weight_name=lora_weight_name,
+                    adapter_name="default",
+                    token=hf_token
+                )
+                logger.info("LoRA loaded successfully")
             
+            # Regional compilation - 7x faster cold start than full compile
+            if settings.device == "cuda" and hasattr(self.pipeline, 'transformer'):
+                logger.info("Compiling transformer (regional)...")
+                self.pipeline.transformer.compile_repeated_blocks(fullgraph=True)
+                logger.info("Compilation complete")
             logger.info(f"Model loaded successfully on {settings.device}")
             
         except Exception as e:

@@ -3,6 +3,7 @@ from diffusers import DiffusionPipeline
 from PIL import Image
 import logging
 import os
+import time
 from app.core.config import settings
 
 logger = logging.getLogger(__name__)
@@ -15,6 +16,11 @@ class ModelService:
     def load_model(self):
         """Load Qwen-Image-Edit model on startup"""
         try:
+            torch.use_deterministic_algorithms(True)
+            torch.backends.cudnn.deterministic = True
+            torch.backends.cudnn.benchmark = False
+            logger.info("Deterministic CUDA settings enabled")
+
             # Check if local model exists (from Docker build)
             local_model_path = "/app/model"
             if os.path.exists(local_model_path):
@@ -77,14 +83,27 @@ class ModelService:
         if self.pipeline is None:
             raise RuntimeError("Model not loaded")
         
+        start_time = time.perf_counter()
+
         # Convert to RGB if necessary
         if image.mode != "RGB":
             image = image.convert("RGB")
+
+        logger.info(
+            "edit_image start: size=%sx%s device=%s steps=%s",
+            image.width,
+            image.height,
+            settings.device,
+            num_inference_steps,
+        )
         
         # Set up generation parameters
-        generator = torch.manual_seed(seed) if seed is not None else None
+        generator = None
+        if seed is not None:
+            generator = torch.Generator(device=settings.device).manual_seed(seed)
         
         # Run inference
+        inference_start = time.perf_counter()
         result = self.pipeline(
             image=image,
             prompt=prompt,
@@ -92,6 +111,13 @@ class ModelService:
             num_inference_steps=num_inference_steps,
             negative_prompt=negative_prompt,
             generator=generator
+        )
+        inference_end = time.perf_counter()
+
+        logger.info(
+            "edit_image done: total=%.3fs inference=%.3fs",
+            inference_end - start_time,
+            inference_end - inference_start,
         )
         
         return result.images[0]

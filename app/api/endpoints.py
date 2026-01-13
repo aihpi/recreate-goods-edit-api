@@ -47,6 +47,13 @@ async def create_image_edit(
             )
 
         # Perform the edit
+        logger.info(
+            "create_image_edit params: steps=%s cfg=%s seed=%s negative_prompt_len=%s",
+            num_inference_steps,
+            true_cfg_scale,
+            seed,
+            len(negative_prompt) if negative_prompt is not None else 0,
+        )
         edited_image = model_service.edit_image(
             pil_image,
             prompt,

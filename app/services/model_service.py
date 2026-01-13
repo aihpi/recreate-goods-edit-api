@@ -16,11 +16,6 @@ class ModelService:
     def load_model(self):
         """Load Qwen-Image-Edit model on startup"""
         try:
-            torch.use_deterministic_algorithms(True)
-            torch.backends.cudnn.deterministic = True
-            torch.backends.cudnn.benchmark = False
-            logger.info("Deterministic CUDA settings enabled")
-
             # Check if local model exists (from Docker build)
             local_model_path = "/app/model"
             if os.path.exists(local_model_path):

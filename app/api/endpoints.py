@@ -21,6 +21,10 @@ async def create_image_edit(
     image: UploadFile = File(...),
     prompt: str = Form(...),
     model: str = Form(default="qwen-image-edit"),
+    seed: int = Form(default=None),
+    true_cfg_scale: float = Form(default=settings.true_cfg_scale),
+    num_inference_steps: int = Form(default=settings.num_inference_steps),
+    negative_prompt: str = Form(default=settings.negative_prompt),
 ):
     """
     Edit an image using Qwen-Image-Edit model.
@@ -43,7 +47,14 @@ async def create_image_edit(
             )
 
         # Perform the edit
-        edited_image = model_service.edit_image(pil_image, prompt)
+        edited_image = model_service.edit_image(
+            pil_image,
+            prompt,
+            seed=seed,
+            true_cfg_scale=true_cfg_scale,
+            num_inference_steps=num_inference_steps,
+            negative_prompt=negative_prompt,
+        )
 
         # Convert to base64
         buffered = io.BytesIO()
@@ -70,8 +81,20 @@ async def create_image_edit_v1(
     image: UploadFile = File(...),
     prompt: str = Form(...),
     model: str = Form(default="qwen-image-edit"),
+    seed: int = Form(default=None),
+    true_cfg_scale: float = Form(default=settings.true_cfg_scale),
+    num_inference_steps: int = Form(default=settings.num_inference_steps),
+    negative_prompt: str = Form(default=settings.negative_prompt),
 ):
-    return await create_image_edit(image=image, prompt=prompt, model=model)
+    return await create_image_edit(
+        image=image,
+        prompt=prompt,
+        model=model,
+        seed=seed,
+        true_cfg_scale=true_cfg_scale,
+        num_inference_steps=num_inference_steps,
+        negative_prompt=negative_prompt,
+    )
 
 @router.get("/v1/models", response_model=ModelsResponse)
 async def list_models_v1():

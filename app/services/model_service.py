@@ -64,7 +64,15 @@ class ModelService:
             logger.error(f"Failed to load model: {e}")
             raise
     
-    def edit_image(self, image: Image.Image, prompt: str, seed: int = None) -> Image.Image:
+    def edit_image(
+        self,
+        image: Image.Image,
+        prompt: str,
+        seed: int = None,
+        true_cfg_scale: float = settings.true_cfg_scale,
+        num_inference_steps: int = settings.num_inference_steps,
+        negative_prompt: str = settings.negative_prompt,
+    ) -> Image.Image:
         """Edit an image using the prompt"""
         if self.pipeline is None:
             raise RuntimeError("Model not loaded")
@@ -80,9 +88,9 @@ class ModelService:
         result = self.pipeline(
             image=image,
             prompt=prompt,
-            true_cfg_scale=settings.true_cfg_scale,
-            num_inference_steps=settings.num_inference_steps,
-            negative_prompt=settings.negative_prompt,
+            true_cfg_scale=true_cfg_scale,
+            num_inference_steps=num_inference_steps,
+            negative_prompt=negative_prompt,
             generator=generator
         )
         

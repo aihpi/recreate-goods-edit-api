@@ -65,6 +65,17 @@ async def list_models():
     """List available models"""
     return ModelsResponse(data=[ModelInfo(id="qwen-image-edit")])
 
+@router.post("/v1/images/edits", response_model=ImageResponse)
+async def create_image_edit_v1(
+    image: UploadFile = File(...),
+    prompt: str = Form(...),
+    model: str = Form(default="qwen-image-edit"),
+):
+    return await create_image_edit(image=image, prompt=prompt, model=model)
+
+@router.get("/v1/models", response_model=ModelsResponse)
+async def list_models_v1():
+    return await list_models()
 
 @router.get("/health")
 async def health_check():
